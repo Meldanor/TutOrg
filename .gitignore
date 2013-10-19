@@ -1,2 +1,4 @@
 /target
 /bin
+*.db
+dependency-reduced-pom.xml

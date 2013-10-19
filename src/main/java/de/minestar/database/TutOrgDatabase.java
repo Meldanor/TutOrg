@@ -15,7 +15,8 @@ public class TutOrgDatabase {
 
 	private void init() {
 		database = new SQLiteDatabase("data");
-
+		database.createStructureIfNeeded(getClass().getResourceAsStream(
+				"/structure.sql"));
 	}
 
 	// Date to text conversion because of the sqllite datase, which does not
