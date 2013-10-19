@@ -20,37 +20,39 @@ package de.minestar.database;
 
 import java.io.InputStream;
 import java.sql.PreparedStatement;
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Database {
 
-    protected DatabaseConnection dbConnection;
+	protected DatabaseConnection dbConnection;
 
-    private Map<String, PreparedStatement> queries;
+	private Map<String, PreparedStatement> queries = new HashMap<String, PreparedStatement>();
 
-    public Database(String... args) {
-        openConnection(args);
-    }
+	public Database(String... args) {
+		openConnection(args);
+	}
 
-    public abstract void openConnection(String... args);
+	public abstract void openConnection(String... args);
 
-    public abstract void createStructureIfNeeded(InputStream source);
+	public abstract void createStructureIfNeeded(InputStream source);
 
-    public void close() {
-        if (this.dbConnection != null && this.dbConnection.isOpen())
-            this.dbConnection.closeConnection();
-    }
+	public void close() {
+		if (this.dbConnection != null && this.dbConnection.isOpen())
+			this.dbConnection.closeConnection();
+	}
 
-    public boolean isAlive() {
-        return this.dbConnection != null && this.dbConnection.isOpen();
-    }
+	public boolean isAlive() {
+		return this.dbConnection != null && this.dbConnection.isOpen();
+	}
 
-    public void prepareStatement(String name, String query) throws Exception {
-        PreparedStatement statement = this.dbConnection.getConnection().prepareStatement(query);
-        this.queries.put(name, statement);
-    }
+	public void prepareStatement(String name, String query) throws Exception {
+		PreparedStatement statement = this.dbConnection.getConnection()
+				.prepareStatement(query);
+		this.queries.put(name, statement);
+	}
 
-    public PreparedStatement getQuery(String name) {
-        return queries.get(name);
-    }
+	public PreparedStatement getQuery(String name) {
+		return queries.get(name);
+	}
 }

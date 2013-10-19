@@ -5,17 +5,21 @@ import de.minestar.database.TutOrgDatabase;
 public class Core {
 
 	public static void main(String[] args) {
-		Core core = new Core();
+		new Core();
 	}
 
-	private TutOrgDatabase database;
+	public static TutOrgDatabase database;
 
 	public Core() {
 		init();
 	}
 
 	private void init() {
-		this.database = new TutOrgDatabase();
+		database = new TutOrgDatabase();
+
+		ConsoleHandler handler = new ConsoleHandler(System.in, System.out);
+		handler.run();
+
 	}
 
 }

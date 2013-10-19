@@ -84,6 +84,7 @@ public class SQLBatcher {
         } catch (Exception e) {
             if (autocommit)
                 databaseConnection.rollback();
+            e.printStackTrace();
 
         }
         // Restore the old commit status
