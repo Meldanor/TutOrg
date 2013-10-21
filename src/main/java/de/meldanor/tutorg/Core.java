@@ -4,22 +4,22 @@ import de.minestar.database.TutOrgDatabase;
 
 public class Core {
 
-	public static void main(String[] args) {
-		new Core();
-	}
+    public static void main(String[] args) {
+        new Core();
+    }
 
-	public static TutOrgDatabase database;
+    public static TutOrgDatabase database;
 
-	public Core() {
-		init();
-	}
+    public Core() {
+        init();
+    }
 
-	private void init() {
-		database = new TutOrgDatabase();
+    private void init() {
+        database = new TutOrgDatabase();
 
-		ConsoleHandler handler = new ConsoleHandler(System.in, System.out);
-		handler.run();
+        InteractionHandler handler = new ConsoleHandler(System.in, System.out);
+        handler.run();
 
-	}
+    }
 
 }
