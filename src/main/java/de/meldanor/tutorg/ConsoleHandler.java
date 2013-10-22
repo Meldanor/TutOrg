@@ -4,9 +4,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -82,7 +79,7 @@ public class ConsoleHandler implements InteractionHandler {
         }
         return counter;
     }
-    
+
     private String readName() {
         output.print("Nachname : ");
         String name = scanner.nextLine();
@@ -125,10 +122,7 @@ public class ConsoleHandler implements InteractionHandler {
         return name;
     }
 
-    // TODO : Refractor to SimilarityMatcher
-    private static final int MAX_WORD_DIFFERENCE = 2;
-
-    private String askTutorium() {
+  private String askTutorium() {
         output.println("Welches Tutorium? Zahl fuer vorhandenes, Text fuer neues Tutorium");
         List<String> tutoriums = Core.database.getAllTutorium();
         int i = 1;
