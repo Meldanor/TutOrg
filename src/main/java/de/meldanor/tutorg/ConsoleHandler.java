@@ -4,7 +4,11 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
@@ -51,28 +55,104 @@ public class ConsoleHandler implements InteractionHandler {
         output.println("Tag = " + DATE_FORMAT.format(date));
 
         String tutorium = askTutorium();
+        if (tutorium == null) {
+            return;
+        }
         output.println("Tutorium = " + tutorium);
-
-        output.println("Tragen Sie einzeln Namen ein. Sind Sie fertig, geben Sie 'X' ein.");
 
         int counter = askStudents(date, tutorium);
         output.println("Es wurden " + counter + " Personen eingetragen!");
     }
 
     private int askStudents(Date date, String tutorium) {
+
+        output.println("Tragen Sie einzeln Namen ein. Sind Sie fertig, geben Sie 'X' ein.");
+
         int counter = 0;
         while (true) {
             output.print("Nachname : ");
-            String surname = scanner.nextLine();
-            if (surname.equals("X"))
-                break;
-            output.print("Nachname : ");
             String name = scanner.nextLine();
+            if (name.equals("X"))
+                break;
+            List<String> names = Core.database.getAllNames();
+            List<String> similarNames = similarNames(name, names);
+
+            // Possible matches
+            if (!similarNames.isEmpty()) {
+                // Name is existing
+                if (similarNames.size() == 1 && similarNames.get(0).equals(name)) {
+                    // Do nothing - we have a 100% match
+                    break;
+                } else {
+                    output.println("Meinten Sie vielleicht einen der folgende Namen? (Leer lassen fuer " + name + ")");
+                    int nameOption = 1;
+                    for (String string : similarNames) {
+                        output.print("(" + nameOption + ") " + string + " ");
+                        ++nameOption;
+                    }
+                    output.println();
+
+                    try {
+                        nameOption = scanner.nextInt();
+                        name = similarNames.get(nameOption - 1);
+                    } catch (InputMismatchException e) {
+                        // Not a number
+                    }
+
+                }
+            }
+            output.print("Vorname : ");
+            String surname = scanner.nextLine();
+
+            if (name.equals("X"))
+                break;
             Core.database.addStudent(name, surname, tutorium, date);
             output.println(surname + " " + name + " eingetragen!");
             ++counter;
         }
         return counter;
+    }
+
+    // TODO : Refractor to SimilarityMatcher
+    private static final int MAX_WORD_DIFFERENCE = 2;
+
+    private List<String> similarNames(String possibleName, List<String> names) {
+
+        List<SimilarName> similarName = new ArrayList<SimilarName>();
+        SimilarityMatcher matcher = new SimilarityMatcher(possibleName);
+        int diff = 0;
+        for (String name : names) {
+            diff = matcher.getDifference(name);
+            // 100% Match
+            if (diff == 0) {
+                return Arrays.asList(name);
+            }
+            if (diff <= MAX_WORD_DIFFERENCE) {
+                similarName.add(new SimilarName(name, diff));
+            }
+        }
+
+        Collections.sort(similarName);
+        List<String> result = new ArrayList<String>();
+        for (SimilarName name : similarName) {
+            result.add(name.name);
+        }
+        return result;
+    }
+
+    private class SimilarName implements Comparable<SimilarName> {
+        private String name;
+        private int difference;
+
+        public SimilarName(String name, int difference) {
+            this.name = name;
+            this.difference = difference;
+        }
+
+        @Override
+        public int compareTo(SimilarName other) {
+            return this.difference - other.difference;
+        }
     }
 
     private String askTutorium() {
