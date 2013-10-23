@@ -68,10 +68,10 @@ public class ConsoleHandler implements InteractionHandler {
         int counter = 0;
         while (true) {
             String name = readName();
-            output.print("Vorname : ");
-            String surname = scanner.nextLine();
-
-            if (name.equals("X"))
+            if (name == null)
+                break;
+            String surname = readSurname(name);
+            if (surname == null)
                 break;
             Core.database.addStudent(name, surname, tutorium, date);
             output.println(surname + " " + name + " eingetragen!");
@@ -80,11 +80,37 @@ public class ConsoleHandler implements InteractionHandler {
         return counter;
     }
 
+    private String readSurname(String name) {
+
+        List<String> surnames = Core.database.getSurnameByName(name);
+        System.out.println(surnames);
+        if (surnames.size() != 0) {
+            output.println("Meinen Sie vielleicht? (Sonst Name eingeben)");
+            int nameOption = 1;
+            // print options
+            for (String surname : surnames) {
+                output.print("(" + nameOption + ") " + surname + " ");
+                ++nameOption;
+            }
+            output.println();
+
+        }
+        output.print("Vorname : ");
+        String surname = scanner.nextLine();
+        if (name.equals("X"))
+            return null;
+        if (NUMBER_PATTERN.matcher(surname).matches()) {
+            int option = Integer.parseInt(surname) - 1;
+            surname = surnames.get(option);
+        }
+        return surname;
+    }
+
     private String readName() {
         output.print("Nachname : ");
         String name = scanner.nextLine();
         if (name.equals("X"))
-            return null;;
+            return null;
 
         EditDistance distance = new LevenshteinDistance(name);
         List<String> names = Core.database.getAllNames();
@@ -110,6 +136,7 @@ public class ConsoleHandler implements InteractionHandler {
                 // Read answer
                 try {
                     nameOption = scanner.nextInt();
+                    scanner.nextLine();
                     name = similarNames.get(nameOption - 1);
                 } catch (InputMismatchException e) {
                     // Not a number
@@ -122,16 +149,18 @@ public class ConsoleHandler implements InteractionHandler {
         return name;
     }
 
-  private String askTutorium() {
-        output.println("Welches Tutorium? Zahl fuer vorhandenes, Text fuer neues Tutorium");
+    private String askTutorium() {
+        output.print("Tutorium: ");
         List<String> tutoriums = Core.database.getAllTutorium();
-        int i = 1;
-        for (String string : tutoriums) {
-            output.print("(" + i + ") " + string + " ");
-            ++i;
+        if (tutoriums.size() != 0) {
+            output.print(" (Zahl fuer vorhandenes, sonst den Namen)");
+            int i = 1;
+            for (String string : tutoriums) {
+                output.print("(" + i + ") " + string + " ");
+                ++i;
+            }
+            output.println();
         }
-        output.println();
-
         String tutorium = scanner.nextLine();
         if (NUMBER_PATTERN.matcher(tutorium).matches()) {
             int option = Integer.parseInt(tutorium) - 1;

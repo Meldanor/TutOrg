@@ -13,6 +13,12 @@ import java.util.Locale;
 
 public class TutOrgDatabase {
 
+    private static final String ALL_DATA = "allData";
+    private static final String ALL_STUDENT_NAME = "allStudentName";
+    private static final String ALL_TUTORIUM = "allTutorium";
+    private static final String STUDENT_BY_NAME = "studentByName";
+    private static final String ADD_STUDENT = "addStudent";
+
     private Database database;
 
     public TutOrgDatabase() {
@@ -43,19 +49,18 @@ public class TutOrgDatabase {
 
     private void prepareStatements() {
         try {
-            this.database.prepareStatement("addStudent", "INSERT INTO students (name, surname, tutorium, date) VALUES (?,?,?,?);");
-            this.database.prepareStatement("allTutorium", "SELECT DISTINCT(tutorium) FROM students;");
-            this.database.prepareStatement("allStudentName", "SELECT name FROM students;");
-
-            this.database.prepareStatement("allData", "SELECT * FROM students;");
+            this.database.prepareStatement(ADD_STUDENT, "INSERT INTO students (name, surname, tutorium, date) VALUES (?,?,?,?);");
+            this.database.prepareStatement(ALL_TUTORIUM, "SELECT DISTINCT(tutorium) FROM students;");
+            this.database.prepareStatement(ALL_STUDENT_NAME, "SELECT DISTINCT(name) FROM students;");
+            this.database.prepareStatement(ALL_DATA, "SELECT * FROM students;");
+            this.database.prepareStatement(STUDENT_BY_NAME, "SELECT DISTINCT(surname) FROM students WHERE name = ?;");
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
     public void addStudent(String name, String surname, String tutorium, Date date) {
-        PreparedStatement statement = this.database.getQuery("addStudent");
+        PreparedStatement statement = this.database.getQuery(ADD_STUDENT);
         try {
             statement.setString(1, name);
             statement.setString(2, surname);
@@ -69,7 +74,7 @@ public class TutOrgDatabase {
 
     public List<String> getAllTutorium() {
 
-        PreparedStatement statement = this.database.getQuery("allTutorium");
+        PreparedStatement statement = this.database.getQuery(ALL_TUTORIUM);
         List<String> tutoriums = new ArrayList<String>();
         try {
 
@@ -87,7 +92,7 @@ public class TutOrgDatabase {
 
     public List<String> getAllNames() {
 
-        PreparedStatement statement = this.database.getQuery("allStudentName");
+        PreparedStatement statement = this.database.getQuery(ALL_STUDENT_NAME);
         List<String> tutoriums = new ArrayList<String>();
         try {
 
@@ -104,7 +109,7 @@ public class TutOrgDatabase {
     }
 
     public List<TutOrgData> getAll() {
-        PreparedStatement statement = this.database.getQuery("allData");
+        PreparedStatement statement = this.database.getQuery(ALL_DATA);
         List<TutOrgData> data = new ArrayList<TutOrgData>();
         try {
 
@@ -121,6 +126,24 @@ public class TutOrgDatabase {
 
             e.printStackTrace();
             return Collections.<TutOrgData> emptyList();
+        }
+    }
+
+    public List<String> getSurnameByName(String name) {
+
+        PreparedStatement statement = this.database.getQuery(STUDENT_BY_NAME);
+        List<String> tutoriums = new ArrayList<String>();
+        try {
+            statement.setString(1, name);
+            ResultSet res = statement.executeQuery();
+            while (res.next()) {
+                tutoriums.add(res.getString("surname"));
+            }
+            return tutoriums;
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return Collections.<String> emptyList();
         }
     }
 
