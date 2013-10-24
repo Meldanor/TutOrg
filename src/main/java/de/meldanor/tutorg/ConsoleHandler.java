@@ -11,8 +11,6 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import de.minestar.database.TutOrgDatabase.TutOrgData;
-
 public class ConsoleHandler implements InteractionHandler {
 
     private Scanner scanner;
@@ -38,7 +36,6 @@ public class ConsoleHandler implements InteractionHandler {
             showStatistic();
         }
     }
-
     private final static DateFormat DATE_FORMAT = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.GERMAN);
 
     private static final Pattern NUMBER_PATTERN = Pattern.compile("^[0-9]+$");
@@ -189,10 +186,26 @@ public class ConsoleHandler implements InteractionHandler {
 
     private void showStatistic() {
 
-        output.println("Auflistung");
-        List<TutOrgData> data = Core.database.getAll();
-        for (TutOrgData tutOrgData : data) {
-            output.print(tutOrgData.getSurname() + "\t" + tutOrgData.getName() + "\t" + tutOrgData.getTutor() + "\t" + DATE_FORMAT.format(tutOrgData.getDate()) + System.getProperty("line.separator"));
+        StatisticHandler handler = new ConsoleStatistics(output);
+
+        output.println("Was moechten Sie wissen?");
+        output.println("(1) Alle Daten (2) Über einen Student (3) Über ein Tutorium");
+        int option = scanner.nextInt();
+        scanner.nextLine();
+        switch (option) {
+            case 1 :
+                handler.printAll();
+                break;
+            case 2 :
+                // TODO: Implement
+                handler.printStudent("", "");
+                break;
+            case 3 :
+                // TODO: Implement
+                handler.printTutorium("");
+                break;
+            default :
+                break;
         }
     }
 

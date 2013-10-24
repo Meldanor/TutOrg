@@ -8,8 +8,13 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 public class TutOrgDatabase {
 
@@ -18,6 +23,7 @@ public class TutOrgDatabase {
     private static final String ALL_TUTORIUM = "allTutorium";
     private static final String STUDENT_BY_NAME = "studentByName";
     private static final String ADD_STUDENT = "addStudent";
+    private static final String ALL_DATES = "allWeeks";
 
     private Database database;
 
@@ -52,8 +58,9 @@ public class TutOrgDatabase {
             this.database.prepareStatement(ADD_STUDENT, "INSERT INTO students (name, surname, tutorium, date) VALUES (?,?,?,?);");
             this.database.prepareStatement(ALL_TUTORIUM, "SELECT DISTINCT(tutorium) FROM students;");
             this.database.prepareStatement(ALL_STUDENT_NAME, "SELECT DISTINCT(name) FROM students;");
-            this.database.prepareStatement(ALL_DATA, "SELECT * FROM students;");
+            this.database.prepareStatement(ALL_DATA, "SELECT * FROM students ORDER BY date;");
             this.database.prepareStatement(STUDENT_BY_NAME, "SELECT DISTINCT(surname) FROM students WHERE name = ?;");
+            this.database.prepareStatement(ALL_DATES, "SELECT DISTINCT(date) FROM students;");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -145,6 +152,42 @@ public class TutOrgDatabase {
             e.printStackTrace();
             return Collections.<String> emptyList();
         }
+    }
+
+    private static final DateTimeFormatter NEW_DATE_FORMAT = DateTimeFormat.mediumDate().withLocale(Locale.GERMAN);
+
+    public int getTotalWeeks() {
+        PreparedStatement statement = this.database.getQuery(ALL_DATES);
+        List<LocalDate> weeks = new ArrayList<LocalDate>();
+        try {
+            ResultSet res = statement.executeQuery();
+            while (res.next()) {
+                String d = res.getString(1);
+                weeks.add(NEW_DATE_FORMAT.parseLocalDate(d));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+        if (weeks.size() == 0)
+            return 0;
+
+        int weekOfYear = 0;
+
+        for (Iterator<LocalDate> iterator = weeks.iterator(); iterator.hasNext();) {
+            LocalDate localDate = iterator.next();
+            weekOfYear = localDate.getWeekOfWeekyear();
+            while (iterator.hasNext()) {
+                LocalDate cur = iterator.next();
+                if (cur.getWeekOfWeekyear() == weekOfYear) {
+                    iterator.remove();
+                } else {
+
+                    break;
+                }
+            }
+        }
+        return weeks.size();
     }
 
     public class TutOrgData {
